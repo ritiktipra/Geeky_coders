@@ -23,4 +23,4 @@ app.include_router(subjects.router)
 
 @app.get("/")
 def root():
-    return {"message": "College Management API"}
+    return {"message": "College Management API success"}

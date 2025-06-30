@@ -2,7 +2,8 @@ import axios from "axios";
 
 // create an axios instance
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000", // replace if your backend URL is different
+  // baseURL: "http://127.0.0.1:8000", 
+  baseURL: "https://uietbackend.onrender.com",
   timeout: 5000,
 });
 

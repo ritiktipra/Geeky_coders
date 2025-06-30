@@ -4,7 +4,7 @@ from datetime import date
 class TeacherRegister(BaseModel):
     full_name: str
     email: EmailStr
-    phone: constr(regex=r'^\d{10}$')
+    phone: constr(pattern=r'^\d{10}$')
     dob: date
     gender: str
     address: str

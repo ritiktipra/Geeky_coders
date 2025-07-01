@@ -34,7 +34,7 @@ export default function TeacherDashboard() {
   // Clear message after few seconds
   useEffect(() => {
     if (message) {
-      const timer = setTimeout(() => setMessage(""), 4000);
+      const timer = setTimeout(() => setMessage(""), 20000);
       return () => clearTimeout(timer);
     }
   }, [message]);
@@ -58,22 +58,52 @@ export default function TeacherDashboard() {
   };
 
   const handleGenerateOtp = async (e) => {
-    e.preventDefault();
-    if (!subject) {
-      setMessage("❌ Please select a subject");
-      return;
+  e.preventDefault();
+  if (!subject) {
+    setMessage("❌ Please select a subject");
+    return;
+  }
+  setLoading(true);
+  try {
+    const data = await generateOtp(employeeId, subject, duration);
+
+    const newOtp = {
+      otp: data.otp,
+      subject: data.subject,
+      end_time: data.valid_till,
+    };
+
+    setOtpList(prev =>
+      [newOtp, ...prev]
+        .filter(item => new Date(item.end_time) > new Date()) // remove expired ones
+        .sort((a, b) => new Date(b.end_time) - new Date(a.end_time))
+    );
+
+    // Optional: auto-remove this OTP exactly after it expires
+    const validTill = new Date(data.valid_till).getTime();
+    const now = Date.now();
+    const timeout = validTill - now;
+
+    if (timeout > 0) {
+      setTimeout(() => {
+        setOtpList(prev =>
+          prev.filter(item => item.otp !== newOtp.otp)
+        );
+      }, timeout);
     }
-    setLoading(true);
-    try {
-      const data = await generateOtp(employeeId, subject, duration);
-      setMessage(`✅ OTP Generated: ${data.otp} (valid till: ${new Date(data.valid_till).toLocaleString()})`);
-      await loadOtps(); // refresh OTP list
-    } catch (err) {
-      console.error("Generate OTP error:", err);
-      setMessage(err.response?.data?.detail || "❌ Failed to generate OTP");
-    }
-    setLoading(false);
-  };
+
+    setMessage(`✅ OTP Generated: ${data.otp} (valid till: ${new Date(data.valid_till).toLocaleString()})`);
+
+    // Optionally, refresh from backend once to sync
+    // await loadOtps();
+
+  } catch (err) {
+    console.error("Generate OTP error:", err);
+    setMessage(err.response?.data?.detail || "❌ Failed to generate OTP");
+  }
+  setLoading(false);
+};
+
 
   const handleExport = async () => {
     try {

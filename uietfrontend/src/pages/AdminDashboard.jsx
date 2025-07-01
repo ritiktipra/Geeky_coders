@@ -104,8 +104,8 @@ export default function AdminDashboard() {
                 {pendingUsers.map(user => (
                   <div key={user.user_id} className="flex justify-between items-center border-b pb-2">
                     <div>
-                      <p className="font-medium">{user.name} ({user.role})</p>
-                      <p className="text-xs text-gray-600">{user.user_id} | {user.email}</p>
+                      <p className="font-medium">{user.name} {user.role}</p>
+                      <p className="text-xs text-gray-600">{user.user_id}| {user.full_name} | {user.email}</p>
                     </div>
                     <div className="space-x-2">
                       <button
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
               <div className="space-y-1">
                 {approvedUsers.map(user => (
                   <p key={user.user_id} className="text-sm">
-                    {user.name} ({user.role} | {user.user_id})
+                    {user.name} ({user.role} | {user.full_name} | {user.user_id})
                   </p>
                 ))}
               </div>
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
               <div className="space-y-1">
                 {rejectedUsers.map(user => (
                   <p key={user.user_id} className="text-sm">
-                    {user.name} ({user.role} | {user.user_id})
+                    {user.name} ({user.role} |  {user.full_name} | {user.user_id})
                   </p>
                 ))}
               </div>

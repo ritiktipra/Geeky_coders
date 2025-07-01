@@ -1,11 +1,17 @@
 import axios from "axios";
 
-// create an axios instance
 const api = axios.create({
-  // baseURL: "http://127.0.0.1:8000", 
-  baseURL: "https://uietbackend.onrender.com",
+  baseURL: import.meta.env.VITE_BACKEND_URL,
   timeout: 5000,
 });
+
+
+// create an axios instance
+// const api = axios.create({
+//   baseURL: "http://127.0.0.1:8000", 
+//   // baseURL: "https://uietbackend.onrender.com",
+//   timeout: 5000,
+// });
 
 // Add a request interceptor to include token
 api.interceptors.request.use(

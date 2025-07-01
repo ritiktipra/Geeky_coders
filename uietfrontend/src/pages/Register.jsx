@@ -112,39 +112,44 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          <label className="block text-gray-700 text-sm mb-1">Name</label>
           <input required name="name" value={form.name} onChange={handleChange} placeholder="Full Name" className="w-full border p-2 rounded"/>
           {fieldErrors.name && <p className="text-red-500 text-sm">{fieldErrors.name}</p>}
-
+          <label className="block text-gray-700 text-sm mb-1">Email</label>
           <input required type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" className="w-full border p-2 rounded"/>
           {fieldErrors.email && <p className="text-red-500 text-sm">{fieldErrors.email}</p>}
-
+          <label className="block text-gray-700 text-sm mb-1">Contact No</label>
           <input required name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" className="w-full border p-2 rounded"/>
           {fieldErrors.phone && <p className="text-red-500 text-sm">{fieldErrors.phone}</p>}
-
-          <input required type="date" name="dob" value={form.dob} onChange={handleChange} className="w-full border p-2 rounded"/>
+          <label className="block text-gray-700 text-sm mb-1">Date of Birth</label>
+          <input required type="date" name="dob" value={form.dob} onChange={handleChange} placeholder="DOB" className="w-full border p-2 rounded"/>
           {fieldErrors.dob && <p className="text-red-500 text-sm">{fieldErrors.dob}</p>}
-
+          <label className="block text-gray-700 text-sm mb-1">Gender</label>
           <select required name="gender" value={form.gender} onChange={handleChange} className="w-full border p-2 rounded">
             <option value="">Select Gender</option>
             <option>Male</option>
             <option>Female</option>
           </select>
           {fieldErrors.gender && <p className="text-red-500 text-sm">{fieldErrors.gender}</p>}
-
+          <label className="block text-gray-700 text-sm mb-1">Address</label>
           <textarea required name="address" value={form.address} onChange={handleChange} placeholder="Address" className="w-full border p-2 rounded"></textarea>
           {fieldErrors.address && <p className="text-red-500 text-sm">{fieldErrors.address}</p>}
 
           {role === "student" && (
             <>
-              <input required name="roll_no" value={form.roll_no} onChange={handleChange} placeholder="Roll Number" className="w-full border p-2 rounded"/>
+              <label className="block text-gray-700 text-sm mb-1">Roll No</label>
+              <input required name="roll_no" value={form.roll_no} onChange={handleChange} placeholder="Roll Number(e.g., 250112)" className="w-full border p-2 rounded"/>
               {fieldErrors.roll_no && <p className="text-red-500 text-sm">{fieldErrors.roll_no}</p>}
 
-              <input required name="department" value={form.department} onChange={handleChange} placeholder="Department (CAPITAL)" className="w-full border p-2 rounded"/>
+              <label className="block text-gray-700 text-sm mb-1">Department</label>
+              <input required name="department" value={form.department} onChange={handleChange} placeholder="Department" className="w-full border p-2 rounded"/>
               {fieldErrors.department && <p className="text-red-500 text-sm">{fieldErrors.department}</p>}
 
-              <input required name="course" value={form.course} onChange={handleChange} placeholder="Course (CAPITAL)" className="w-full border p-2 rounded"/>
+              <label className="block text-gray-700 text-sm mb-1">Branch</label>
+              <input required name="course" value={form.course} onChange={handleChange} placeholder="Branch" className="w-full border p-2 rounded"/>
               {fieldErrors.course && <p className="text-red-500 text-sm">{fieldErrors.course}</p>}
-
+              
+              <label className="block text-gray-700 text-sm mb-1">Semester</label>
               <select required name="semester" value={form.semester} onChange={handleChange} className="w-full border p-2 rounded">
                 <option value="">Select Semester</option>
                 {[...Array(8)].map((_, i) => (
@@ -153,16 +158,22 @@ export default function Register() {
               </select>
               {fieldErrors.semester && <p className="text-red-500 text-sm">{fieldErrors.semester}</p>}
 
-              <input required name="section" value={form.section} onChange={handleChange} placeholder="Section (CAPITAL)" className="w-full border p-2 rounded"/>
-              {fieldErrors.section && <p className="text-red-500 text-sm">{fieldErrors.section}</p>}
+              <label className="block text-gray-700 text-sm mb-1">Section</label>
+              <select  required  name="section"  value={form.section}  onChange={handleChange}  className="w-full border p-2 rounded">
+              <option value="" disabled>Select Section</option>
+             <option value="A">A</option>
+             <option value="B">B</option>
+              </select>{fieldErrors.section && (  <p className="text-red-500 text-sm">{fieldErrors.section}</p>)}
             </>
           )}
 
           {role === "teacher" && (
             <>
-              <input required name="employee_id" value={form.employee_id} onChange={handleChange} placeholder="Employee ID (CAPITAL)" className="w-full border p-2 rounded"/>
+              <label className="block text-gray-700 text-sm mb-1">Employee ID  </label>
+              <input required name="employee_id" value={form.employee_id} onChange={handleChange} placeholder="Employee ID (e.g., 10234)" className="w-full border p-2 rounded"/>
               {fieldErrors.employee_id && <p className="text-red-500 text-sm">{fieldErrors.employee_id}</p>}
 
+              <label className="block text-gray-700 text-sm mb-1">Subject  </label>
               <select required name="subject" value={form.subject} onChange={handleChange} className="w-full border p-2 rounded">
                 <option value="">Select Subject</option>
                 <option>ACE</option>

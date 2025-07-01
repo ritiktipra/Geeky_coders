@@ -94,6 +94,8 @@ export default function Login() {
           <p className="mt-3 text-center text-sm text-red-500">{message}</p>
         )}
       </div>
+      
     </div>
+    
   );
 }

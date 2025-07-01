@@ -4,10 +4,11 @@ from .api import admin, register
 from .api import auth
 from app.api import teacher, student, subjects
 app = FastAPI()
+from app.core.config import URL
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://uietfrontend.vercel.app"],
+    allow_origins=[URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

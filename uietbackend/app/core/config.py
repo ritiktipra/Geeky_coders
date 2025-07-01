@@ -10,13 +10,13 @@ SMTP_SERVER = os.getenv("SMTP_SERVER")
 SMTP_PORT = int(os.getenv("SMTP_PORT"))
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-
+URL = os.getenv("url")
 
 # app/core/config.py
 
 SUBJECTS = [
     "EMT", "VLSI", "DSA", "CE",
     "DSP", "Analog Electronics",
-    "Microprocessors", "Communication Systems",
-    "Computer Networks", "AI"
+    "MICROPROCESSOR", "Communication Systems",
+    "NETWORKS", "AI"
 ]

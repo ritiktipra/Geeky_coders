@@ -28,14 +28,14 @@ def generate_otp_route(data: GenerateOtpRequest):
         raise HTTPException(status_code=404, detail="Teacher not found")
 
     otp = generate_otp()
-    now = datetime.utcnow()
-    end_time = now + timedelta(minutes=data.duration_minutes + 350) 
+    now = datetime.utcnow() 
+    end_time = now + timedelta(minutes=data.duration_minutes + 337) 
 
     otps.insert_one({
         "otp": otp,
         "subject": data.subject,
         "teacher_id": data.employee_id.upper(),
-        "start_time": now,
+        "start_time": now ,
         "end_time": end_time
     })
     return {"otp": otp, "subject": data.subject, "valid_till": end_time}

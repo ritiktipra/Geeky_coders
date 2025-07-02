@@ -22,6 +22,9 @@ export default function TeacherDashboard() {
   const name = localStorage.getItem("name"); // stored at login
   const navigate = useNavigate();
 
+  const [filterDate, setFilterDate] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+
   useEffect(() => {
     if (!employeeId) {
       navigate("/login");
@@ -210,6 +213,35 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
+      <div className="flex flex-col md:flex-row gap-3 mb-3">
+      <div>
+        <label className="block text-sm mb-1">Filter by Date</label>
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => setFilterDate(e.target.value)}
+          className="p-2 border rounded"
+        />
+      </div>
+      <div>
+        <label className="block text-sm mb-1">Filter by Month</label>
+        <input
+          type="month"
+          value={filterMonth}
+          onChange={(e) => setFilterMonth(e.target.value)}
+          className="p-2 border rounded"
+        />
+      </div>
+      <div className="flex items-end">
+        <button
+          onClick={() => { setFilterDate(""); setFilterMonth(""); }}
+          className="bg-gray-300 text-black px-3 py-2 rounded hover:bg-gray-400"
+        >
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
       {/* Attendance History */}
       <div className="bg-white p-4 rounded shadow mb-6">
         <h2 className="text-xl font-semibold mb-3">Attendance Marked by Students</h2>
@@ -224,14 +256,27 @@ export default function TeacherDashboard() {
             </thead>
             <tbody>
               {attendanceList.length > 0 ? (
-                attendanceList.map((a, idx) => (
+              attendanceList
+                .filter((a) => {
+                  if (filterDate) {
+                    const date = new Date(a.marked_at).toISOString().split("T")[0];
+                    return date === filterDate;
+                  }
+                  if (filterMonth) {
+                    const month = new Date(a.marked_at).toISOString().slice(0, 7);
+                    return month === filterMonth;
+                  }
+                  return true;
+                })
+                .map((a, idx) => (
                   <tr key={idx}>
                     <td className="border px-2 py-1">{a.roll_no}</td>
                     <td className="border px-2 py-1">{a.subject}</td>
                     <td className="border px-2 py-1">{new Date(a.marked_at).toLocaleString()}</td>
                   </tr>
                 ))
-              ) : (
+            ) : (
+
                 <tr>
                   <td colSpan="3" className="text-center p-2">No attendance marked yet</td>
                 </tr>

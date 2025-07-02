@@ -61,7 +61,7 @@ export default function StudentDashboard() {
     try {
       let data = await getStudentAttendance(roll_no);
       if (subjectFilter) {
-        data = data.filter((a) => a.subject === subjectFilter);
+        data = data.filter((a) => a.subject.toLowerCase() === subjectFilter.toLowerCase());
       }
       if (dateFilter) {
         data = data.filter(

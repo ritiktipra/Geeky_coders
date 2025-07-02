@@ -51,6 +51,7 @@ export default function Login() {
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
 
         {/* Role toggle */}
+        
         <div className="flex justify-center mb-4">
           {["student", "teacher"].map(r => (
             <button
@@ -66,6 +67,7 @@ export default function Login() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-3">
+          <label className="block text-gray-700 text-sm mb-1">Login ID  </label>
           <input
             required
             value={userId}
@@ -73,6 +75,7 @@ export default function Login() {
             placeholder={role === "student" ? "Roll Number" : "Employee ID"}
             className="w-full border p-2 rounded"
           />
+          <label className="block text-gray-700 text-sm mb-1">Password </label>
           <input
             required
             type="date"

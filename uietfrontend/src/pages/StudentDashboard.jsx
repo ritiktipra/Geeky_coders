@@ -15,32 +15,52 @@ export default function StudentDashboard() {
   const [otpError, setOtpError] = useState("");
   const [filterSubject, setFilterSubject] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [profile, setProfile] = useState(null);
 
   const roll_no = localStorage.getItem("userId");
   const navigate = useNavigate();
 
-  // Auto-check OTP info
   useEffect(() => {
-    const checkOtp = async () => {
-      if (otp.length > 0) {
-        try {
-          const res = await api.get(`/student/check-otp/${otp}`);
-          setOtpInfo(res.data);
-          setOtpError("");
-        } catch (err) {
-          console.log(err);
-          setOtpInfo(null);
-          setOtpError("❌ Invalid OTP or expired");
-        }
-      } else {
-        setOtpInfo(null);
-        setOtpError("");
-      }
-    };
-    checkOtp();
+    if (!roll_no) {
+      navigate("/login");
+    } else {
+      fetchProfile();
+      loadAttendance();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roll_no]);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await api.get(`/student/profile/${roll_no}`);
+      setProfile(res.data);
+    } catch (err) {
+      console.error("Failed to fetch profile", err);
+    }
+  };
+
+  useEffect(() => {
+    if (otp.length > 0) {
+      checkOtp();
+    } else {
+      setOtpInfo(null);
+      setOtpError("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otp]);
 
-  // Auto-clear message after few seconds
+  const checkOtp = async () => {
+    try {
+      const res = await api.get(`/student/check-otp/${otp}`);
+      setOtpInfo(res.data);
+      setOtpError("");
+    } catch (err) {
+      console.error(err);
+      setOtpInfo(null);
+      setOtpError("❌ Invalid OTP or expired");
+    }
+  };
+
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => setMessage(""), 4000);
@@ -48,20 +68,13 @@ export default function StudentDashboard() {
     }
   }, [message]);
 
-  useEffect(() => {
-    if (!roll_no) {
-      navigate("/login");
-    } else {
-      loadAttendance();
-    }
-  }, [roll_no, navigate]);
-
-  // Load attendance, optionally filtered
   const loadAttendance = async (subjectFilter, dateFilter) => {
     try {
       let data = await getStudentAttendance(roll_no);
       if (subjectFilter) {
-        data = data.filter((a) => a.subject.toLowerCase() === subjectFilter.toLowerCase());
+        data = data.filter(
+          (a) => a.subject.toLowerCase() === subjectFilter.toLowerCase()
+        );
       }
       if (dateFilter) {
         data = data.filter(
@@ -76,30 +89,28 @@ export default function StudentDashboard() {
   };
 
   const handleMarkAttendance = async (e) => {
-  e.preventDefault();
-  if (!roll_no || !otp || !subject) {
-    setMessage("❌ Please fill all fields before marking attendance.");
-    return;
-  }
-  setLoading(true);
-  try {
-    console.log(subject);
-    await markAttendance(roll_no, subject, otp);
-    setMessage("✅ Attendance marked successfully!");
-    setOtp("");
-    setSubject("");
-    loadAttendance(filterSubject, filterDate);
-  } catch (err) {
-    console.error(err);
-    let detail = err.response?.data?.detail;
-    if (Array.isArray(detail)) {
-      detail = detail.map((d) => d.msg).join(", ");
+    e.preventDefault();
+    if (!roll_no || !otp || !subject) {
+      setMessage("❌ Please fill all fields before marking attendance.");
+      return;
     }
-    setMessage(detail || "❌ Failed to mark attendance.");
-  }
-  setLoading(false);
-};
-
+    setLoading(true);
+    try {
+      await markAttendance(roll_no, subject, otp);
+      setMessage("✅ Attendance marked successfully!");
+      setOtp("");
+      setSubject("");
+      loadAttendance(filterSubject, filterDate);
+    } catch (err) {
+      console.error(err);
+      let detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        detail = detail.map((d) => d.msg).join(", ");
+      }
+      setMessage(detail || "❌ Failed to mark attendance.");
+    }
+    setLoading(false);
+  };
 
   const handleExport = async () => {
     try {
@@ -134,7 +145,18 @@ export default function StudentDashboard() {
         </button>
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Welcome, Roll No: {roll_no}</h2>
+      <div className="bg-white p-4 rounded shadow mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          Welcome, {profile ? profile.full_name : 'Loading...'}
+        </h2>
+        <div className="text-gray-600 space-x-4 text-sm md:text-base">
+          <span>🎓 Roll No: <b>{roll_no}</b></span>
+          {profile?.department && <span>🏫 Department: <b>{profile.department}</b></span>}
+          {profile?.semester && <span>📚 Semester: <b>{profile.semester}</b></span>}
+          {profile?.section && <span>🔖 Section: <b>{profile.section}</b></span>}
+        </div>
+      </div>
+
 
       {/* Mark Attendance */}
       <div className="bg-white p-4 rounded shadow mb-6">
@@ -170,7 +192,6 @@ export default function StudentDashboard() {
           </button>
         </form>
 
-        {/* OTP info */}
         {otpInfo && (
           <div className="text-sm text-gray-700 mt-2">
             OTP is for subject: <b>{otpInfo.subject}</b><br/>
@@ -181,8 +202,6 @@ export default function StudentDashboard() {
         {otpError && (
           <p className="text-red-600 mt-1">{otpError}</p>
         )}
-
-        {/* Message */}
         {message && (
           <p className={`mt-2 ${message.startsWith('✅') ? 'text-green-700' : 'text-red-600'}`}>
             {message}

@@ -141,7 +141,7 @@ export default function TeacherDashboard() {
         </button>
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Welcome {name} ({employeeId})</h2>
+      <h2 className="text-xl font-bold mb-4">Welcome {name} : {employeeId}</h2>
 
       {/* Generate OTP */}
       <div className="bg-white p-4 rounded shadow mb-6">

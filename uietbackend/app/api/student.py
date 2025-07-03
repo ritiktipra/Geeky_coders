@@ -1,16 +1,17 @@
 # app/api/student.py
-from fastapi import APIRouter, HTTPException, Body, Depends
+from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from app.db.database import otps, attendance, approved_students
 from app.core.config import SUBJECTS
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
-from bson import ObjectId
 from io import StringIO
 import csv
-from app.db.database import attendance
+import pytz
 
 router = APIRouter()
+
+IST = pytz.timezone('Asia/Kolkata')
 
 class MarkAttendanceRequest(BaseModel):
     roll_no: str
@@ -19,16 +20,15 @@ class MarkAttendanceRequest(BaseModel):
 
 @router.post("/student/markAttendance")
 def mark_attendance(req: MarkAttendanceRequest):
-    roll_no = req.roll_no
+    roll_no = req.roll_no.upper()
     otp = req.otp
-    subject = req.subject.strip().lower()  # normalize subject input
-    # Make SUBJECTS lowercase too, if not already
-    SUBJECTS_LOWER = [s.lower() for s in SUBJECTS]
+    subject = req.subject.strip().lower()  # normalize
 
+    SUBJECTS_LOWER = [s.lower() for s in SUBJECTS]
     if subject not in SUBJECTS_LOWER:
         raise HTTPException(status_code=400, detail="Invalid subject")
 
-    student = approved_students.find_one({"roll_no": roll_no.upper()})
+    student = approved_students.find_one({"roll_no": roll_no})
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
@@ -36,58 +36,86 @@ def mark_attendance(req: MarkAttendanceRequest):
     if not otp_doc:
         raise HTTPException(status_code=404, detail="Invalid OTP")
 
-    now = datetime.utcnow()
-    if not (otp_doc["start_time"] <= now <= otp_doc["end_time"]):
+    now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
+
+    start_time = otp_doc["start_time"]
+    end_time = otp_doc["end_time"]
+
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=pytz.utc)
+    if end_time.tzinfo is None:
+        end_time = end_time.replace(tzinfo=pytz.utc)
+
+    if not (start_time <= now_utc <= end_time):
         raise HTTPException(status_code=400, detail="OTP expired or not active")
 
-    # Compare subject from OTP (stored in DB) and input subject in lowercase
     if otp_doc["subject"].strip().lower() != subject:
         raise HTTPException(status_code=400, detail="Subject does not match OTP")
 
-    already_marked = attendance.find_one({"roll_no": roll_no.upper(), "otp": otp})
+    already_marked = attendance.find_one({"roll_no": roll_no, "otp": otp})
     if already_marked:
         raise HTTPException(status_code=400, detail="Attendance already marked")
 
     attendance.insert_one({
-        "roll_no": roll_no.upper(),
+        "roll_no": roll_no,
         "student_name": student["full_name"],
-        "subject": subject,  # store normalized lowercase subject
+        "subject": subject,
         "otp": otp,
-        "marked_at": now
+        "marked_at": now_utc
     })
     return {"message": "Attendance marked successfully"}
 
-
 @router.get("/student/view-attendance/{roll_no}")
 def view_attendance(roll_no: str, subject: str = None):
-    query = {"roll_no": roll_no.upper()}
+    roll_no = roll_no.upper()
+    query = {"roll_no": roll_no}
+
     if subject:
-        if subject not in SUBJECTS:
+        subject = subject.strip().lower()
+        SUBJECTS_LOWER = [s.lower() for s in SUBJECTS]
+        if subject not in SUBJECTS_LOWER:
             raise HTTPException(status_code=400, detail="Invalid subject")
         query["subject"] = subject
 
     records = list(attendance.find(query))
-    return [
-        {
+
+    result = []
+    for r in records:
+        marked_at = r.get("marked_at")
+        if marked_at and marked_at.tzinfo is None:
+            marked_at = marked_at.replace(tzinfo=pytz.utc)
+        marked_at_ist = marked_at.astimezone(IST).strftime("%Y-%m-%d %H:%M:%S") if marked_at else None
+
+        result.append({
             "subject": r["subject"],
-            "marked_at": r["marked_at"]
-        }
-        for r in records
-    ]
+            "marked_at": marked_at_ist
+        })
+
+    return result
 
 @router.get("/student/check-otp/{otp}")
 def check_otp(otp: str):
     otp_doc = otps.find_one({"otp": otp})
     if not otp_doc:
         raise HTTPException(status_code=404, detail="Invalid OTP")
+
+    start_time = otp_doc["start_time"]
+    end_time = otp_doc["end_time"]
+
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=pytz.utc)
+    if end_time.tzinfo is None:
+        end_time = end_time.replace(tzinfo=pytz.utc)
+
     return {
         "subject": otp_doc["subject"],
-        "start_time": otp_doc["start_time"],
-        "end_time": otp_doc["end_time"]
+        "start_time": start_time.astimezone(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        "end_time": end_time.astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
     }
 
 @router.get("/student/export-attendance/{roll_no}")
 async def export_attendance_csv(roll_no: str):
+    roll_no = roll_no.upper()
     records = list(attendance.find({"roll_no": roll_no}))
 
     if not records:
@@ -95,17 +123,22 @@ async def export_attendance_csv(roll_no: str):
 
     csv_file = StringIO()
     writer = csv.writer(csv_file)
-    writer.writerow(["Subject", "Marked At"])
+    writer.writerow(["Subject", "Marked At (IST)"])
 
     for rec in records:
         subject = rec.get("subject", "")
-        marked_at = str(rec.get("marked_at", ""))
-        writer.writerow([subject, marked_at])
+        marked_at = rec.get("marked_at")
+        if marked_at and marked_at.tzinfo is None:
+            marked_at = marked_at.replace(tzinfo=pytz.utc)
+        marked_at_ist = marked_at.astimezone(IST).strftime("%Y-%m-%d %H:%M:%S") if marked_at else ""
+
+        writer.writerow([subject, marked_at_ist])
 
     csv_file.seek(0)
 
+    filename = f"attendance_{roll_no}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
     return StreamingResponse(
         csv_file,
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=attendance_{roll_no}.csv"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )

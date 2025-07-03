@@ -142,3 +142,20 @@ async def export_attendance_csv(roll_no: str):
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+@router.get("/student/profile/{roll_no}")
+def get_student_profile(roll_no: str):
+    roll_no = roll_no.upper()
+    student = approved_students.find_one({"roll_no": roll_no})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # return only required fields (never return sensitive info)
+    return {
+        "full_name": student.get("full_name"),
+        "email": student.get("email"),
+        "department": student.get("department"),
+        "semester": student.get("semester"),
+        "section": student.get("section"),
+        # add more fields if needed
+    }

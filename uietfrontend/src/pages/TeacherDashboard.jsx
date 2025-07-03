@@ -7,6 +7,7 @@ import {
   getGeneratedOtps,
 } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const SUBJECTS = ["EMT", "VLSI", "DSA", "CE", "DSP", "MICROPROCESSOR", "NETWORKS"];
 
@@ -17,19 +18,22 @@ export default function TeacherDashboard() {
   const [attendanceList, setAttendanceList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-
+  
   const employeeId = localStorage.getItem("userId"); // stored at login
-  const name = localStorage.getItem("name"); // stored at login
+  const  employee_id = localStorage.getItem("userId"); 
   const navigate = useNavigate();
 
   const [filterDate, setFilterDate] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
 
+  const [profile, setProfile] = useState(null);
+  
   useEffect(() => {
     if (!employeeId) {
       navigate("/login");
     } else {
       loadOtps();
+      fetchProfile();
       loadAttendance();
     }
   }, [employeeId, navigate]);
@@ -42,6 +46,14 @@ export default function TeacherDashboard() {
     }
   }, [message]);
 
+    const fetchProfile = async () => {
+    try {
+      const res = await api.get(`/teacher/profile/${employeeId}`);
+      setProfile(res.data);
+    } catch (err) {
+      console.error("Failed to fetch profile", err);
+    }
+  };
   const loadOtps = async () => {
     try {
       const data = await getGeneratedOtps(employeeId);
@@ -133,6 +145,9 @@ export default function TeacherDashboard() {
     <div className="p-6 bg-gradient-to-b from-blue-100 to-blue-200 min-h-screen">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-semibold">Teacher Dashboard</h1>
+        <div className="bg-white p-4 rounded shadow mb-6">
+      
+    </div>
         <button
           onClick={handleLogout}
           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
@@ -141,7 +156,15 @@ export default function TeacherDashboard() {
         </button>
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Welcome {name} : {employeeId}</h2>
+      <div className="bg-white p-4 rounded shadow mb-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        Welcome, {profile ? profile.full_name : 'Loading...'}
+      </h2>
+      <div className="text-gray-600 space-x-4 text-sm md:text-base">
+        <span>🎓 Employee ID: <b>{employee_id}</b></span>
+       
+      </div>
+    </div>
 
       {/* Generate OTP */}
       <div className="bg-white p-4 rounded shadow mb-6">

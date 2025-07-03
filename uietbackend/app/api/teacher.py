@@ -120,3 +120,16 @@ def export_attendance(employee_id: str):
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+@router.get("/teacher/profile/{employee_id}")
+def get_teacher_profile(employee_id: str):
+    employee_id = employee_id.upper()
+    teacher = approved_teachers.find_one({"employee_id": employee_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher  not found")
+    
+    # return only required fields (never return sensitive info)
+    return {
+        "full_name": teacher.get("full_name"),
+        "email": teacher.get("email"),      
+    }

@@ -146,16 +146,16 @@ export default function StudentDashboard() {
       </div>
 
       <div className="bg-white p-4 rounded shadow mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Welcome, {profile ? profile.full_name : 'Loading...'}
-        </h2>
-        <div className="text-gray-600 space-x-4 text-sm md:text-base">
-          <span>🎓 Roll No: <b>{roll_no}</b></span>
-          {profile?.department && <span>🏫 Department: <b>{profile.department}</b></span>}
-          {profile?.semester && <span>📚 Semester: <b>{profile.semester}</b></span>}
-          {profile?.section && <span>🔖 Section: <b>{profile.section}</b></span>}
-        </div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        Welcome, {profile ? profile.full_name : 'Loading...'}
+      </h2>
+      <div className="text-gray-600 space-x-4 text-sm md:text-base">
+        <span>🎓 Roll No: <b>{roll_no}</b></span>
+        {profile?.department && <span>🏫 Department: <b>{profile.department}</b></span>}
+        {profile?.semester && <span>📚 Semester: <b>{profile.semester}</b></span>}
+        {profile?.section && <span>🔖 Section: <b>{profile.section}</b></span>}
       </div>
+    </div>
 
 
       {/* Mark Attendance */}

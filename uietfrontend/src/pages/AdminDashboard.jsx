@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { FaUserClock, FaUserCheck, FaUserTimes, FaDownload } from "react-icons/fa";
+import { FaUserClock, FaUserCheck, FaUserTimes, FaDownload , FaSignOutAlt} from "react-icons/fa";
+
+
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -127,6 +129,12 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url);
   };
 
+   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("admin_id");  // ✅ remove saved admin_id if you have stored it
+    navigate("/admin/login");
+  };
   if (loading) return <div className="p-4 text-center">Loading...</div>;
 
   // Filtered lists
@@ -137,6 +145,13 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-200 p-6 space-y-8">
       <h1 className="text-3xl font-bold mb-4 text-center">Admin Dashboard</h1>
+
+      <button
+          onClick={handleLogout}
+          className="flex items-center bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+        >
+          <FaSignOutAlt className="mr-2" /> Logout
+        </button>
 
       {/* One block per table */}
       {[{

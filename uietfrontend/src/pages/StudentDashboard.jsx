@@ -19,6 +19,7 @@ export default function StudentDashboard() {
 
   const roll_no = localStorage.getItem("userId");
   const navigate = useNavigate();
+  const [otpPasteMessage, setOtpPasteMessage] = useState("");
 
   useEffect(() => {
     if (!roll_no) {
@@ -178,10 +179,16 @@ export default function StudentDashboard() {
             type="text"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
+            onPaste={(e) => {
+            e.preventDefault();
+            setOtpPasteMessage("⚠️ Pasting is disabled. Type the OTP like a real human. Proxies? Scripts? Nice try, hacker-man. 🕶️💻");
+            setTimeout(() => setOtpPasteMessage(""), 5000);}}
             placeholder="Enter OTP"
             className="p-2 border rounded"
             required
           />
+          {otpPasteMessage && (<p className="text-yellow-700 text-sm mt-1">{otpPasteMessage}</p>)}
+
 
           <button
             type="submit"

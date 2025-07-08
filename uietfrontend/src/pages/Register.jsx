@@ -95,105 +95,159 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center py-10">
-      <div className="w-full max-w-md bg-white p-6 rounded shadow">
-        <h2 className="text-2xl font-bold mb-4 text-center">Register as</h2>
-        <div className="flex justify-center mb-4">
-          <button
-            type="button"
-            className={`px-4 py-2 mr-2 rounded ${role === "student" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-            onClick={() => setRole("student")}
-          >Student</button>
-          <button
-            type="button"
-            className={`px-4 py-2 rounded ${role === "teacher" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-            onClick={() => setRole("teacher")}
-          >Teacher</button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <label className="block text-gray-700 text-sm mb-1">Name</label>
-          <input required name="name" value={form.name} onChange={handleChange} placeholder="Full Name" className="w-full border p-2 rounded"/>
-          {fieldErrors.name && <p className="text-red-500 text-sm">{fieldErrors.name}</p>}
-          <label className="block text-gray-700 text-sm mb-1">Email</label>
-          <input required type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" className="w-full border p-2 rounded"/>
-          {fieldErrors.email && <p className="text-red-500 text-sm">{fieldErrors.email}</p>}
-          <label className="block text-gray-700 text-sm mb-1">Contact No</label>
-          <input required name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" className="w-full border p-2 rounded"/>
-          {fieldErrors.phone && <p className="text-red-500 text-sm">{fieldErrors.phone}</p>}
-          <label className="block text-gray-700 text-sm mb-1">Date of Birth</label>
-          <input required type="date" name="dob" value={form.dob} onChange={handleChange} placeholder="DOB" className="w-full border p-2 rounded"/>
-          {fieldErrors.dob && <p className="text-red-500 text-sm">{fieldErrors.dob}</p>}
-          <label className="block text-gray-700 text-sm mb-1">Gender</label>
-          <select required name="gender" value={form.gender} onChange={handleChange} className="w-full border p-2 rounded">
-            <option value="">Select Gender</option>
-            <option>Male</option>
-            <option>Female</option>
-          </select>
-          {fieldErrors.gender && <p className="text-red-500 text-sm">{fieldErrors.gender}</p>}
-          <label className="block text-gray-700 text-sm mb-1">Address</label>
-          <textarea required name="address" value={form.address} onChange={handleChange} placeholder="Address" className="w-full border p-2 rounded"></textarea>
-          {fieldErrors.address && <p className="text-red-500 text-sm">{fieldErrors.address}</p>}
-
-          {role === "student" && (
-            <>
-              <label className="block text-gray-700 text-sm mb-1">Roll No</label>
-              <input required name="roll_no" value={form.roll_no} onChange={handleChange} placeholder="Roll Number(e.g., 250112)" className="w-full border p-2 rounded"/>
-              {fieldErrors.roll_no && <p className="text-red-500 text-sm">{fieldErrors.roll_no}</p>}
-
-              <label className="block text-gray-700 text-sm mb-1">Department</label>
-              <input required name="department" value={form.department} onChange={handleChange} placeholder="Department" className="w-full border p-2 rounded"/>
-              {fieldErrors.department && <p className="text-red-500 text-sm">{fieldErrors.department}</p>}
-
-              <label className="block text-gray-700 text-sm mb-1">Branch</label>
-              <input required name="course" value={form.course} onChange={handleChange} placeholder="Branch" className="w-full border p-2 rounded"/>
-              {fieldErrors.course && <p className="text-red-500 text-sm">{fieldErrors.course}</p>}
-              
-              <label className="block text-gray-700 text-sm mb-1">Semester</label>
-              <select required name="semester" value={form.semester} onChange={handleChange} className="w-full border p-2 rounded">
-                <option value="">Select Semester</option>
-                {[...Array(8)].map((_, i) => (
-                  <option key={i+1}>{i+1}</option>
-                ))}
-              </select>
-              {fieldErrors.semester && <p className="text-red-500 text-sm">{fieldErrors.semester}</p>}
-
-              <label className="block text-gray-700 text-sm mb-1">Section</label>
-              <select  required  name="section"  value={form.section}  onChange={handleChange}  className="w-full border p-2 rounded">
-              <option value="" disabled>Select Section</option>
-             <option value="A">A</option>
-             <option value="B">B</option>
-              </select>{fieldErrors.section && (  <p className="text-red-500 text-sm">{fieldErrors.section}</p>)}
-            </>
-          )}
-
-          {role === "teacher" && (
-            <>
-              <label className="block text-gray-700 text-sm mb-1">Employee ID  </label>
-              <input required name="employee_id" value={form.employee_id} onChange={handleChange} placeholder="Employee ID (e.g., 10234)" className="w-full border p-2 rounded"/>
-              {fieldErrors.employee_id && <p className="text-red-500 text-sm">{fieldErrors.employee_id}</p>}
-
-              <label className="block text-gray-700 text-sm mb-1">Subject  </label>
-              <select required name="subject" value={form.subject} onChange={handleChange} className="w-full border p-2 rounded">
-                <option value="">Select Subject</option>
-                <option>ACE</option>
-                <option>EMT</option>
-                <option>EMI</option>
-                <option>DD</option>
-                <option>VLSI</option>
-                <option>Power Electronics</option>
-              </select>
-              {fieldErrors.subject && <p className="text-red-500 text-sm">{fieldErrors.subject}</p>}
-            </>
-          )}
-
-          <button disabled={loading} type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
-            {loading ? "Submitting..." : "Register"}
-          </button>
-        </form>
-
-        {message && <p className="mt-3 text-center text-sm text-gray-700">{message}</p>}
+    
+  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 px-4">
+    <div className="w-full max-w-lg bg-white p-8 rounded-xl shadow-lg">
+      <h2 className="text-3xl font-bold mb-6 text-center text-blue-900">Register as</h2>
+      <div className="flex justify-center mb-6 space-x-4">
+        <button
+          type="button"
+          className={`px-5 py-2 rounded-full font-semibold transition ${
+            role === "student"
+              ? "bg-blue-900 text-white shadow"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => setRole("student")}
+        >
+          Student
+        </button>
+        <button
+          type="button"
+          className={`px-5 py-2 rounded-full font-semibold transition ${
+            role === "teacher"
+              ? "bg-blue-900 text-white shadow"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+          onClick={() => setRole("teacher")}
+        >
+          Teacher
+        </button>
       </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* common fields */}
+        {/* keep same mapping as earlier, just change input styles */}
+        {[
+          { label: "Name", name: "name", placeholder: "Full Name" },
+          { label: "Email", name: "email", type: "email", placeholder: "Email" },
+          { label: "Contact No", name: "phone", placeholder: "Phone" },
+          { label: "Date of Birth", name: "dob", type: "date" },
+          { label: "Gender", name: "gender", type: "select", options: ["Male", "Female"] },
+          { label: "Address", name: "address", type: "textarea", placeholder: "Address" },
+        ].map(({ label, name, type = "text", placeholder, options }) => (
+          <div key={name}>
+            <label className="block text-gray-700 text-sm font-medium mb-1">{label}</label>
+            {type === "select" ? (
+              <select
+                required
+                name={name}
+                value={form[name]}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition"
+              >
+                <option value="">Select {label}</option>
+                {options.map((opt) => <option key={opt}>{opt}</option>)}
+              </select>
+            ) : type === "textarea" ? (
+              <textarea
+                required
+                name={name}
+                value={form[name]}
+                onChange={handleChange}
+                placeholder={placeholder}
+                className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition"
+              />
+            ) : (
+              <input
+                required
+                type={type}
+                name={name}
+                value={form[name]}
+                onChange={handleChange}
+                placeholder={placeholder}
+                className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition"
+              />
+            )}
+            {fieldErrors[name] && <p className="text-red-500 text-xs mt-1">{fieldErrors[name]}</p>}
+          </div>
+        ))}
+
+        {/* student fields */}
+        {role === "student" && (
+          <>
+            <label className="block text-gray-700 text-sm font-medium mb-1">Roll No</label>
+            <input required name="roll_no" value={form.roll_no} onChange={handleChange}
+              placeholder="Roll Number"
+              className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition" />
+            {fieldErrors.roll_no && <p className="text-red-500 text-xs mt-1">{fieldErrors.roll_no}</p>}
+
+            <label className="block text-gray-700 text-sm font-medium mb-1">Department</label>
+            <input required name="department" value={form.department} onChange={handleChange}
+              placeholder="Department"
+              className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition" />
+            {fieldErrors.department && <p className="text-red-500 text-xs mt-1">{fieldErrors.department}</p>}
+
+            <label className="block text-gray-700 text-sm font-medium mb-1">Branch</label>
+            <input required name="course" value={form.course} onChange={handleChange}
+              placeholder="Branch"
+              className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition" />
+            {fieldErrors.course && <p className="text-red-500 text-xs mt-1">{fieldErrors.course}</p>}
+
+            <label className="block text-gray-700 text-sm font-medium mb-1">Semester</label>
+            <select required name="semester" value={form.semester} onChange={handleChange}
+              className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">Select Semester</option>
+              {[...Array(8)].map((_, i) => <option key={i+1}>{i+1}</option>)}
+            </select>
+            {fieldErrors.semester && <p className="text-red-500 text-xs mt-1">{fieldErrors.semester}</p>}
+
+            <label className="block text-gray-700 text-sm font-medium mb-1">Section</label>
+            <select required name="section" value={form.section} onChange={handleChange}
+              className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition">
+              <option value="" disabled>Select Section</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+            </select>
+            {fieldErrors.section && <p className="text-red-500 text-xs mt-1">{fieldErrors.section}</p>}
+          </>
+        )}
+
+        {/* teacher fields */}
+        {role === "teacher" && (
+          <>
+            <label className="block text-gray-700 text-sm font-medium mb-1">Employee ID</label>
+            <input required name="employee_id" value={form.employee_id} onChange={handleChange}
+              placeholder="Employee ID"
+              className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition" />
+            {fieldErrors.employee_id && <p className="text-red-500 text-xs mt-1">{fieldErrors.employee_id}</p>}
+
+            <label className="block text-gray-700 text-sm font-medium mb-1">Subject</label>
+            <select required name="subject" value={form.subject} onChange={handleChange}
+              className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 transition">
+              <option value="">Select Subject</option>
+              <option>ACE</option>
+              <option>EMT</option>
+              <option>EMI</option>
+              <option>DD</option>
+              <option>VLSI</option>
+              <option>Power Electronics</option>
+            </select>
+            {fieldErrors.subject && <p className="text-red-500 text-xs mt-1">{fieldErrors.subject}</p>}
+          </>
+        )}
+
+        <button
+          disabled={loading}
+          type="submit"
+          className="w-full bg-blue-900 text-white font-semibold py-2 rounded-full shadow hover:bg-blue-800 transition"
+        >
+          {loading ? "Submitting..." : "Register"}
+        </button>
+      </form>
+
+      {message && <p className="mt-4 text-center text-sm text-blue-700 font-medium">{message}</p>}
     </div>
-  );
+  </div>
+);
+
 }

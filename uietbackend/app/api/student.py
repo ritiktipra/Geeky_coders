@@ -17,12 +17,14 @@ class MarkAttendanceRequest(BaseModel):
     roll_no: str
     otp: str
     subject: str
+    visitorId: str
 
 @router.post("/student/markAttendance")
 def mark_attendance(req: MarkAttendanceRequest):
     roll_no = req.roll_no.upper()
     otp = req.otp
     subject = req.subject.strip().lower()  # normalize
+    visitor_id = req.visitorId
 
     SUBJECTS_LOWER = [s.lower() for s in SUBJECTS]
     if subject not in SUBJECTS_LOWER:
@@ -56,11 +58,23 @@ def mark_attendance(req: MarkAttendanceRequest):
     if already_marked:
         raise HTTPException(status_code=400, detail="Attendance already marked")
 
+     # check if same visitor_id used by this student in last 50 min
+    from datetime import timedelta
+    fifty_min_ago = now_utc - timedelta(minutes=50)
+    recent = attendance.find_one({
+        "roll_no": roll_no,
+        "visitor_id": visitor_id,
+        "marked_at": {"$gte": fifty_min_ago}
+    })
+    if recent:
+        raise HTTPException(status_code=400, detail="Attendance already marked from this device recently (within 50 minutes)")
+
     attendance.insert_one({
         "roll_no": roll_no,
         "student_name": student["full_name"],
         "subject": subject,
         "otp": otp,
+        "visitor_id": visitor_id,
         "marked_at": now_utc
     })
     return {"message": "Attendance marked successfully"}

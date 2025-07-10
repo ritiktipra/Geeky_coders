@@ -19,13 +19,17 @@ api.interceptors.request.use(
   }
 );
 
-export const markAttendance = (roll_no, subject, otp) =>
-  {api.post("/student/markAttendance", {
+
+export const markAttendance = async (roll_no, subject, otp, visitorId) => {
+  console.log("inside", subject);
+  const res = await api.post("/student/markAttendance", {
     roll_no,
     subject,
-    otp
+    otp,
+    visitorId
   });
-console.log("inside", subject);};
+  return res.data;
+};
 
 
 export const getStudentAttendance = async (rollNo) => {
@@ -67,6 +71,11 @@ export const getGeneratedOtps = async (employeeId) => {
   return res.data;
 };
 
+export const getTodayAttendanceCount = async () => {
+  const response = await api.get('/api/attendance/today');
+  return response.data.count;
+};
+
 // Add a response interceptor to handle errors globally
 api.interceptors.response.use(
   (response) => response,
@@ -80,6 +89,7 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 
 export default api;

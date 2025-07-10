@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { markAttendance, getStudentAttendance, exportStudentAttendanceCSV } from "../services/api";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { getFingerprint } from "../services/getFingerprint"
 
 const SUBJECTS = ["EMT", "VLSI", "DSA", "CE", "DSP", "MICROPROCESSOR", "NETWORKS"];
 
@@ -97,7 +98,8 @@ export default function StudentDashboard() {
     }
     setLoading(true);
     try {
-      await markAttendance(roll_no, subject, otp);
+      const visitorId = await getFingerprint(); // get device fingerprint
+      await markAttendance(roll_no, subject, otp, visitorId);
       setMessage("✅ Attendance marked successfully!");
       setOtp("");
       setSubject("");
@@ -113,21 +115,48 @@ export default function StudentDashboard() {
     setLoading(false);
   };
 
-  const handleExport = async () => {
-    try {
-      const blob = await exportStudentAttendanceCSV(roll_no);
-      const url = window.URL.createObjectURL(new Blob([blob]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `attendance_${roll_no}_${new Date().toISOString()}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      console.error("Failed to export attendance", err);
-      setMessage("❌ Error exporting attendance.");
-    }
-  };
+    const handleExport = () => {
+  if (attendanceList.length === 0) {
+    setMessage("⚠️ No attendance data to export.");
+    return;
+  }
+
+  if (!profile) {
+    setMessage("❌ Profile not loaded yet.");
+    return;
+  }
+
+  const metaRows = [
+    [`Name:,${profile.full_name}`],
+    [`Roll No:,${profile.roll_no}`],
+    [`Department:,${profile.department || ''}`],
+    [`Semester:,${profile.semester || ''}`],
+    [`Section:,${profile.section || ''}`],
+    [], // empty row before table
+  ];
+
+  const headers = ["Subject", "Marked At", "Time"];
+  const dataRows = attendanceList.map((a) => [
+    a.subject,
+    new Date(a.marked_at).toLocaleString(),
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [...metaRows, headers, ...dataRows].map((e) => e.join(",")).join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute(
+    "download",
+    `attendance_${profile.roll_no}_${new Date().toISOString()}.csv`
+  );
+  link.href = encodedUri;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
 
   const handleLogout = () => {
     localStorage.clear();
@@ -135,38 +164,40 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-b from-green-100 to-green-200 min-h-screen">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">Student Dashboard</h1>
+  <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 p-4 md:p-8">
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-green-800">🎓 Student Dashboard</h1>
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow"
         >
           Logout
         </button>
       </div>
 
-      <div className="bg-white p-4 rounded shadow mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">
-        Welcome, {profile ? profile.full_name : 'Loading...'}
-      </h2>
-      <div className="text-gray-600 space-x-4 text-sm md:text-base">
-        <span>🎓 Roll No: <b>{roll_no}</b></span>
-        {profile?.department && <span>🏫 Department: <b>{profile.department}</b></span>}
-        {profile?.semester && <span>📚 Semester: <b>{profile.semester}</b></span>}
-        {profile?.section && <span>🔖 Section: <b>{profile.section}</b></span>}
+      {/* Profile Card */}
+      <div className="bg-white rounded-2xl shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          Welcome, <span className="text-green-700">{profile ? profile.full_name : 'Loading...'}</span>
+        </h2>
+        <div className="text-gray-600 flex flex-wrap gap-4 mt-2 text-sm md:text-base">
+          <span>🆔 <b>Roll No:</b> {roll_no}</span>
+          {profile?.department && <span>🏫 <b>Department:</b> {profile.department}</span>}
+          {profile?.semester && <span>📚 <b>Semester:</b> {profile.semester}</span>}
+          {profile?.section && <span>🔖 <b>Section:</b> {profile.section}</span>}
+        </div>
       </div>
-    </div>
-
 
       {/* Mark Attendance */}
-      <div className="bg-white p-4 rounded shadow mb-6">
-        <h2 className="text-xl font-semibold mb-3">Mark Attendance using OTP</h2>
+      <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+        <h2 className="text-xl font-semibold text-gray-800">✅ Mark Attendance using OTP</h2>
         <form onSubmit={handleMarkAttendance} className="flex flex-col md:flex-row gap-3">
           <select
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            className="p-2 border rounded"
+            className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-400"
             required
           >
             <option value="" disabled>Select Subject</option>
@@ -180,48 +211,47 @@ export default function StudentDashboard() {
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             onPaste={(e) => {
-            e.preventDefault();
-            setOtpPasteMessage("⚠️ Pasting is disabled. Type the OTP like a real human. Proxies? Scripts? Nice try, hacker-man. 🕶️💻");
-            setTimeout(() => setOtpPasteMessage(""), 5000);}}
+              e.preventDefault();
+              setOtpPasteMessage("⚠️ Pasting is disabled. Type the OTP like a real human. 🕶️💻");
+              setTimeout(() => setOtpPasteMessage(""), 5000);
+            }}
             placeholder="Enter OTP"
-            className="p-2 border rounded"
+            className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-400"
             required
           />
-          {otpPasteMessage && (<p className="text-yellow-700 text-sm mt-1">{otpPasteMessage}</p>)}
-
 
           <button
             type="submit"
             disabled={loading}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow"
           >
             {loading ? "Marking..." : "Mark Attendance"}
           </button>
         </form>
 
+        {otpPasteMessage && <p className="text-yellow-700 text-sm">{otpPasteMessage}</p>}
+
         {otpInfo && (
-          <div className="text-sm text-gray-700 mt-2">
-            OTP is for subject: <b>{otpInfo.subject}</b><br/>
-            Active from: {new Date(otpInfo.start_time).toLocaleString()}<br/>
-            Until: {new Date(otpInfo.end_time).toLocaleString()}
+          <div className="bg-green-50 border border-green-200 rounded p-3 text-sm text-gray-700">
+            <p>OTP is for subject: <b>{otpInfo.subject}</b></p>
+            <p>Active from: {new Date(otpInfo.start_time).toLocaleString()}</p>
+            <p>Until: {new Date(otpInfo.end_time).toLocaleString()}</p>
           </div>
         )}
-        {otpError && (
-          <p className="text-red-600 mt-1">{otpError}</p>
-        )}
+        {otpError && <p className="text-red-600">{otpError}</p>}
         {message && (
-          <p className={`mt-2 ${message.startsWith('✅') ? 'text-green-700' : 'text-red-600'}`}>
+          <p className={`text-sm ${message.startsWith('✅') ? 'text-green-700' : 'text-red-600'}`}>
             {message}
           </p>
         )}
       </div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-3">
+      <div className="flex flex-col md:flex-row gap-3">
         <select
           value={filterSubject}
           onChange={(e) => setFilterSubject(e.target.value)}
-          className="p-2 border rounded"
+          className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-400"
         >
           <option value="">All Subjects</option>
           {SUBJECTS.map((sub) => (
@@ -232,11 +262,11 @@ export default function StudentDashboard() {
           type="date"
           value={filterDate}
           onChange={(e) => setFilterDate(e.target.value)}
-          className="p-2 border rounded"
+          className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-400"
         />
         <button
           onClick={() => loadAttendance(filterSubject, filterDate)}
-          className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded shadow"
         >
           Apply Filters
         </button>
@@ -246,34 +276,34 @@ export default function StudentDashboard() {
             setFilterDate("");
             loadAttendance();
           }}
-          className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400"
+          className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-3 py-2 rounded shadow"
         >
           Reset
         </button>
       </div>
 
       {/* Attendance History */}
-      <div className="bg-white p-4 rounded shadow mb-6">
-        <h2 className="text-xl font-semibold mb-3">Attendance History</h2>
+      <div className="bg-white rounded-2xl shadow p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-3">📅 Attendance History</h2>
         <div className="overflow-auto">
-          <table className="w-full text-sm border">
+          <table className="w-full text-sm border border-gray-200 rounded">
             <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-2 py-1">Subject</th>
-                <th className="border px-2 py-1">Marked At</th>
+              <tr className="bg-gray-100 text-gray-700">
+                <th className="border px-3 py-2">Subject</th>
+                <th className="border px-3 py-2">Marked At</th>
               </tr>
             </thead>
             <tbody>
               {attendanceList.length > 0 ? (
                 attendanceList.map((a, idx) => (
-                  <tr key={idx}>
-                    <td className="border px-2 py-1">{a.subject}</td>
-                    <td className="border px-2 py-1">{new Date(a.marked_at).toLocaleString()}</td>
+                  <tr key={idx} className="hover:bg-green-50">
+                    <td className="border px-3 py-2">{a.subject}</td>
+                    <td className="border px-3 py-2">{new Date(a.marked_at).toLocaleString()}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="2" className="text-center p-2">No attendance marked yet</td>
+                  <td colSpan="2" className="text-center p-3 text-gray-500">No attendance marked yet</td>
                 </tr>
               )}
             </tbody>
@@ -281,12 +311,16 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      <button
-        onClick={handleExport}
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-      >
-        Export Attendance CSV
-      </button>
+      {/* Export */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleExport}
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow"
+        >
+          📤 Export Attendance CSV
+        </button>
+      </div>
     </div>
-  );
+  </div>
+);
 }

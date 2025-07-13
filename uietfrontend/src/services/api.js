@@ -20,17 +20,6 @@ api.interceptors.request.use(
 );
 
 
-// export const markAttendance = async (roll_no, subject, otp, visitorId) => {
-//   console.log("inside", subject);
-//   const res = await api.post("/student/markAttendance", {
-//     roll_no,
-//     subject,
-//     otp,
-//     visitorId
-//   });
-//   return res.data;
-// };
-
 export const markAttendance = async (roll_no, subject, otp, visitorId, lat, lng) => {
   const res = await api.post("/student/markAttendance", {
     roll_no,
@@ -42,6 +31,7 @@ export const markAttendance = async (roll_no, subject, otp, visitorId, lat, lng)
   });
   return res.data;
 };
+
 
 
 export const getStudentAttendance = async (rollNo) => {
@@ -56,25 +46,17 @@ export const exportStudentAttendanceCSV = async (rollNo) => {
   return res.data;
 };
 
-// export const generateOtp = async (employeeId, subject, duration) => {
-//   const res = await api.post("/teacher/generate-otp", {
-//     employee_id: employeeId,
-//     subject,
-//     duration_minutes: duration,
-//   });
-//   return res.data;
-// };
-export const generateOtp = async (employeeId, subject, durationMinutes, lat, lng) => {
+export const generateOtp = async (employeeId, subject,durationMinutes, lat, lng) => {
   const res = await api.post("/teacher/generate-otp", {
     employee_id: employeeId,
     subject: subject,
     duration_minutes: durationMinutes,
     lat: lat,
     lng: lng
+   
   });
   return res.data;
 };
-
 
 
 export const getAttendance = async (employeeId) => {

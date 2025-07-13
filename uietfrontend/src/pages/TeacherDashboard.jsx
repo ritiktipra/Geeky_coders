@@ -80,44 +80,6 @@ export default function TeacherDashboard() {
     }
   };
 
-  // const handleGenerateOtp = async (e) => {
-  //   e.preventDefault();
-  //   if (!subject) {
-  //     setMessage("❌ Please select a subject");
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try {
-  //     const data = await generateOtp(employeeId, subject, duration);
-  //     const newOtp = {
-  //       otp: data.otp,
-  //       subject: data.subject,
-  //       end_time: data.valid_till,
-  //     };
-
-  //     setOtpList((prev) =>
-  //       [newOtp, ...prev]
-  //         .filter((item) => new Date(item.end_time) > new Date())
-  //         .sort((a, b) => new Date(b.end_time) - new Date(a.end_time))
-  //     );
-
-  //     const validTill = new Date(data.valid_till).getTime();
-  //     const now = Date.now();
-  //     const timeout = validTill - now;
-
-  //     if (timeout > 0) {
-  //       setTimeout(() => {
-  //         setOtpList((prev) => prev.filter((item) => item.otp !== newOtp.otp));
-  //       }, timeout);
-  //     }
-
-  //     setMessage(`✅ OTP Generated: ${data.otp} (valid till: ${new Date(data.valid_till).toLocaleString()})`);
-  //   } catch (err) {
-  //     console.error("Generate OTP error:", err);
-  //     setMessage(err.response?.data?.detail || "❌ Failed to generate OTP");
-  //   }
-  //   setLoading(false);
-  // };
       const handleGenerateOtp = async (e) => {
       e.preventDefault();
       if (!subject) {

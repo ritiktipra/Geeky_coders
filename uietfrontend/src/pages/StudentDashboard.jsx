@@ -3,7 +3,7 @@ import { markAttendance, getStudentAttendance, exportStudentAttendanceCSV } from
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { getFingerprint } from "../services/getFingerprint"
-
+import {LogOut,} from "lucide-react";
 const SUBJECTS = ["EMT", "VLSI", "DSA", "CE", "DSP", "MICROPROCESSOR", "NETWORKS"];
 
 export default function StudentDashboard() {
@@ -90,65 +90,38 @@ export default function StudentDashboard() {
     }
   };
 
-  // const handleMarkAttendance = async (e) => {
-  //   e.preventDefault();
-  //   if (!roll_no || !otp || !subject) {
-  //     setMessage("❌ Please fill all fields before marking attendance.");
-  //     return;
-  //   }
-  //   setLoading(true);
-  //   try {
-  //     const visitorId = await getFingerprint(); // get device fingerprint
-  //     await markAttendance(roll_no, subject, otp, visitorId);
-  //     setMessage("✅ Attendance marked successfully!");
-  //     setOtp("");
-  //     setSubject("");
-  //     loadAttendance(filterSubject, filterDate);
-  //   } catch (err) {
-  //     console.error(err);
-  //     let detail = err.response?.data?.detail;
-  //     if (Array.isArray(detail)) {
-  //       detail = detail.map((d) => d.msg).join(", ");
-  //     }
-  //     setMessage(detail || "❌ Failed to mark attendance.");
-  //   }
-  //   setLoading(false);
-  // };
-
   const handleMarkAttendance = async (e) => {
-  e.preventDefault();
-  if (!roll_no || !otp || !subject) {
-    setMessage("❌ Please fill all fields before marking attendance.");
-    return;
-  }
-  setLoading(true);
-  try {
-    const visitorId = await getFingerprint();
-
-    // Get location
-    const position = await new Promise((resolve, reject) =>
+    e.preventDefault();
+    if (!roll_no || !otp || !subject) {
+      setMessage("❌ Please fill all fields before marking attendance.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const visitorId = await getFingerprint(); // get device fingerprint
+      const position = await new Promise((resolve, reject) =>
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
     );
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
 
-    await markAttendance(roll_no, subject, otp, visitorId, lat, lng);
-    setMessage("✅ Attendance marked successfully!");
-    setOtp("");
-    setSubject("");
-    loadAttendance(filterSubject, filterDate);
-  } catch (err) {
-    console.error(err);
-    let detail = err.response?.data?.detail;
-    if (Array.isArray(detail)) {
-      detail = detail.map((d) => d.msg).join(", ");
+      await markAttendance(roll_no, subject, otp, visitorId, lat, lng);
+      setMessage("✅ Attendance marked successfully!");
+      setOtp("");
+      setSubject("");
+      loadAttendance(filterSubject, filterDate);
+    } catch (err) {
+      console.error(err);
+      let detail = err.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        detail = detail.map((d) => d.msg).join(", ");
+      }
+      setMessage(detail || "❌ Failed to mark attendance.");
     }
-    setMessage(detail || "❌ Failed to mark attendance.");
-  }
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
-    const handleExport = () => {
+  const handleExport = () => {
   if (attendanceList.length === 0) {
     setMessage("⚠️ No attendance data to export.");
     return;
@@ -161,7 +134,7 @@ export default function StudentDashboard() {
 
   const metaRows = [
     [`Name:,${profile.full_name}`],
-    [`Roll No:,${profile.roll_no}`],
+    [`Roll No:,${profile.roll_no || ''}`],
     [`Department:,${profile.department || ''}`],
     [`Semester:,${profile.semester || ''}`],
     [`Section:,${profile.section || ''}`],
@@ -203,10 +176,10 @@ export default function StudentDashboard() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-green-800">🎓 Student Dashboard</h1>
         <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow"
-        >
-          Logout
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" /> Logout
         </button>
       </div>
 

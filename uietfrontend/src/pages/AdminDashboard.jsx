@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [rejectedFilter, setRejectedFilter] = useState("");
 
   // Pagination
-  const itemsPerPage = 5;
+  const itemsPerPage = 20;
   const [pendingPage, setPendingPage] = useState(1);
   const [approvedPage, setApprovedPage] = useState(1);
   const [rejectedPage, setRejectedPage] = useState(1);

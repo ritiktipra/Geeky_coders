@@ -90,30 +90,63 @@ export default function StudentDashboard() {
     }
   };
 
+  // const handleMarkAttendance = async (e) => {
+  //   e.preventDefault();
+  //   if (!roll_no || !otp || !subject) {
+  //     setMessage("❌ Please fill all fields before marking attendance.");
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const visitorId = await getFingerprint(); // get device fingerprint
+  //     await markAttendance(roll_no, subject, otp, visitorId);
+  //     setMessage("✅ Attendance marked successfully!");
+  //     setOtp("");
+  //     setSubject("");
+  //     loadAttendance(filterSubject, filterDate);
+  //   } catch (err) {
+  //     console.error(err);
+  //     let detail = err.response?.data?.detail;
+  //     if (Array.isArray(detail)) {
+  //       detail = detail.map((d) => d.msg).join(", ");
+  //     }
+  //     setMessage(detail || "❌ Failed to mark attendance.");
+  //   }
+  //   setLoading(false);
+  // };
+
   const handleMarkAttendance = async (e) => {
-    e.preventDefault();
-    if (!roll_no || !otp || !subject) {
-      setMessage("❌ Please fill all fields before marking attendance.");
-      return;
+  e.preventDefault();
+  if (!roll_no || !otp || !subject) {
+    setMessage("❌ Please fill all fields before marking attendance.");
+    return;
+  }
+  setLoading(true);
+  try {
+    const visitorId = await getFingerprint();
+
+    // Get location
+    const position = await new Promise((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
+    );
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    await markAttendance(roll_no, subject, otp, visitorId, lat, lng);
+    setMessage("✅ Attendance marked successfully!");
+    setOtp("");
+    setSubject("");
+    loadAttendance(filterSubject, filterDate);
+  } catch (err) {
+    console.error(err);
+    let detail = err.response?.data?.detail;
+    if (Array.isArray(detail)) {
+      detail = detail.map((d) => d.msg).join(", ");
     }
-    setLoading(true);
-    try {
-      const visitorId = await getFingerprint(); // get device fingerprint
-      await markAttendance(roll_no, subject, otp, visitorId);
-      setMessage("✅ Attendance marked successfully!");
-      setOtp("");
-      setSubject("");
-      loadAttendance(filterSubject, filterDate);
-    } catch (err) {
-      console.error(err);
-      let detail = err.response?.data?.detail;
-      if (Array.isArray(detail)) {
-        detail = detail.map((d) => d.msg).join(", ");
-      }
-      setMessage(detail || "❌ Failed to mark attendance.");
-    }
-    setLoading(false);
-  };
+    setMessage(detail || "❌ Failed to mark attendance.");
+  }
+  setLoading(false);
+};
 
     const handleExport = () => {
   if (attendanceList.length === 0) {

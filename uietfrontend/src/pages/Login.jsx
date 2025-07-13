@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { User, GraduationCap, Loader2 } from "lucide-react"; // install lucide-react if you haven’t
@@ -11,6 +11,15 @@ export default function Login() {
   const [message, setMessage] = useState("");
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!sessionStorage.getItem("loginPageReloadedOnce")) {
+      sessionStorage.setItem("loginPageReloadedOnce", "true");
+        setTimeout(() => {
+    window.location.reload();
+  }, 5000);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +52,7 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-400 px-4">
       <div className="w-full max-w-md bg-white/90 backdrop-blur p-8 rounded-2xl shadow-xl">
-        
+        <h2 className="text-3xl font-bold text-gray-800">Better hit refresh—unless you enjoy staring at the login screen like it owes you money.</h2>
         {/* Header */}
         <div className="flex flex-col items-center mb-6">
           <GraduationCap size={40} className="text-blue-600 mb-2" />

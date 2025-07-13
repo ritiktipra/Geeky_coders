@@ -8,6 +8,18 @@ from fastapi.responses import StreamingResponse
 from io import StringIO
 import csv
 import pytz
+import math
+from typing import Optional
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    R = 6371000  # meters
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
 
 router = APIRouter()
 
@@ -18,14 +30,15 @@ class MarkAttendanceRequest(BaseModel):
     otp: str
     subject: str
     visitorId: str
-    lat: float | None = None
-    lng: float | None = None
+    lat: Optional[float]
+    lng: Optional[float]
+
 
 @router.post("/student/markAttendance")
 def mark_attendance(req: MarkAttendanceRequest):
     roll_no = req.roll_no.upper()
     otp = req.otp
-    subject = req.subject.strip().lower()  # normalize
+    subject = req.subject.strip().lower()
     visitor_id = req.visitorId
 
     SUBJECTS_LOWER = [s.lower() for s in SUBJECTS]
@@ -60,7 +73,24 @@ def mark_attendance(req: MarkAttendanceRequest):
     if already_marked:
         raise HTTPException(status_code=400, detail="Attendance already marked")
 
-     # check if same visitor_id used by this student in last 50 min
+    # ✅ location validation
+    if req.lat is None or req.lng is None:
+        raise HTTPException(status_code=400, detail="Location (lat/lng) required to mark attendance")
+
+    location = otp_doc.get("location")
+    if not location or "lat" not in location or "lng" not in location:
+        raise HTTPException(status_code=500, detail="Teacher location not available in OTP")
+
+    teacher_lat = location["lat"]
+    teacher_lng = location["lng"]
+    print("Student location:", req.lat, req.lng)
+    print("Teacher location:", teacher_lat, teacher_lng)
+
+    distance = haversine_distance(req.lat, req.lng, teacher_lat, teacher_lng)
+    if distance > 100:
+        raise HTTPException(status_code=400, detail=f"Too far from teacher's location ({round(distance)} m > 100 m)")
+
+    # ✅ recent device check
     from datetime import timedelta
     fifty_min_ago = now_utc - timedelta(minutes=50)
     recent = attendance.find_one({
@@ -80,9 +110,10 @@ def mark_attendance(req: MarkAttendanceRequest):
         "marked_at": now_utc,
         "lat": req.lat,
         "lng": req.lng
-
     })
+
     return {"message": "Attendance marked successfully"}
+
 
 @router.get("/student/view-attendance/{roll_no}")
 def view_attendance(roll_no: str, subject: str = None):
@@ -176,5 +207,6 @@ def get_student_profile(roll_no: str):
         "department": student.get("department"),
         "semester": student.get("semester"),
         "section": student.get("section"),
+        "roll_no": student.get("roll_no")
         # add more fields if needed
     }

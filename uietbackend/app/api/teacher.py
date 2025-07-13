@@ -14,6 +14,8 @@ class GenerateOtpRequest(BaseModel):
     employee_id: str
     subject: str
     duration_minutes: int
+    lat: float
+    lng: float
 
 router = APIRouter()
 
@@ -40,7 +42,8 @@ def generate_otp_route(data: GenerateOtpRequest):
         "subject": data.subject,
         "teacher_id": data.employee_id.upper(),
         "start_time": now_utc,
-        "end_time": end_time_utc
+        "end_time": end_time_utc,
+        "location": {"lat": data.lat, "lng": data.lng}
     })
 
     # Convert to IST for response
@@ -48,7 +51,7 @@ def generate_otp_route(data: GenerateOtpRequest):
     return {
         "otp": otp,
         "subject": data.subject,
-        "valid_till": end_time_ist.strftime("%Y-%m-%d %H:%M:%S")
+        "valid_till": end_time_ist.strftime("%Y-%m-%d %H:%M:%S"),
     }
 
 @router.get("/teacher/view-attendance/{employee_id}")

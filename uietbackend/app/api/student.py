@@ -18,6 +18,8 @@ class MarkAttendanceRequest(BaseModel):
     otp: str
     subject: str
     visitorId: str
+    lat: float | None = None
+    lng: float | None = None
 
 @router.post("/student/markAttendance")
 def mark_attendance(req: MarkAttendanceRequest):
@@ -75,7 +77,10 @@ def mark_attendance(req: MarkAttendanceRequest):
         "subject": subject,
         "otp": otp,
         "visitor_id": visitor_id,
-        "marked_at": now_utc
+        "marked_at": now_utc,
+        "lat": req.lat,
+        "lng": req.lng
+
     })
     return {"message": "Attendance marked successfully"}
 

@@ -3,8 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api import admin, register
 from .api import auth
 from app.api import teacher, student, subjects
-app = FastAPI()
 from app.core.config import URL
+
+app = FastAPI()
+
 
 app.add_middleware(
     CORSMiddleware,

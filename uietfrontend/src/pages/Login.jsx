@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { User, GraduationCap, Loader2 } from "lucide-react"; // install lucide-react if you haven’t
+import { User, GraduationCap, Loader2 } from "lucide-react";
 
 export default function Login() {
   const [role, setRole] = useState("student");
@@ -9,15 +9,13 @@ export default function Login() {
   const [dob, setDob] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-
   const navigate = useNavigate();
 
+  // Reload once to avoid first-load issue
   useEffect(() => {
     if (!sessionStorage.getItem("loginPageReloadedOnce")) {
       sessionStorage.setItem("loginPageReloadedOnce", "true");
-        setTimeout(() => {
-    window.location.reload();
-  }, 5000);
+      setTimeout(() => window.location.reload(), 500);
     }
   }, []);
 
@@ -34,10 +32,15 @@ export default function Login() {
 
       await api.post(url, payload);
 
+      // 🧹 Clear old data & store fresh
+      localStorage.removeItem("role");
+      localStorage.removeItem("userId");
       localStorage.setItem("role", role);
       localStorage.setItem("userId", userId.trim().toUpperCase());
 
-      navigate(role === "student" ? "/student" : "/teacher");
+      // navigate(location.role === "student" ? "/student" : "/teacher");
+      window.location.href = role === "student" ? "/student" : "/teacher";
+
     } catch (err) {
       console.error("Login error:", err);
       let detail = err.response?.data?.detail;
@@ -52,7 +55,6 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-blue-200 to-blue-400 px-4">
       <div className="w-full max-w-md bg-white/90 backdrop-blur p-8 rounded-2xl shadow-xl">
-        <h2 className="text-sm font-bold text-gray-800">Better hit refresh—unless you enjoy staring at the login screen like it owes you money.</h2>
         {/* Header */}
         <div className="flex flex-col items-center mb-6">
           <GraduationCap size={40} className="text-blue-600 mb-2" />
@@ -70,7 +72,7 @@ export default function Login() {
               className={`flex items-center gap-1 px-4 py-2 rounded-full transition 
                 ${role === r ? "bg-blue-500 text-white shadow" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
             >
-              <User size={16} /> 
+              <User size={16} />
               {r.charAt(0).toUpperCase() + r.slice(1)}
             </button>
           ))}

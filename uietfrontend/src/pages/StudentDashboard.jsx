@@ -23,14 +23,18 @@ export default function StudentDashboard() {
   const [otpPasteMessage, setOtpPasteMessage] = useState("");
 
   useEffect(() => {
-    if (!roll_no) {
-      navigate("/login");
-    } else {
-      fetchProfile();
-      loadAttendance();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roll_no]);
+  const userId = localStorage.getItem("userId");
+  const role = localStorage.getItem("role");
+
+  if (!userId || role !== "student") {
+    navigate("/login");
+  } else {
+    fetchProfile();
+    loadAttendance();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   const fetchProfile = async () => {
     try {

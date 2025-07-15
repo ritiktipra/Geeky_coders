@@ -38,13 +38,19 @@ export default function TeacherDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!employeeId) navigate("/login");
-    else {
-      loadOtps();
-      fetchProfile();
-      loadAttendance();
-    }
-  }, [employeeId, navigate]);
+  const userId = localStorage.getItem("userId");
+  const role = localStorage.getItem("role");
+
+  if (!userId || role !== "teacher") {
+    navigate("/login");
+  } else {
+    loadOtps();
+    fetchProfile();
+    loadAttendance();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   useEffect(() => {
     if (message) {

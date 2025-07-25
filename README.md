@@ -1,12 +1,12 @@
 # AISOC 2025
 Pritam Saini <br>
-email-pritam.cs143@gmail.com
+email- pritam.cs143@gmail.com
 
 Ricky Panu <br>
-email-ricky76023@gmail.com
+email- ricky76023@gmail.com
 
 Ritik Chauhan <br>
-email-ritiktipra2004@gmail.com
+email- ritiktipra2004@gmail.com
 
 
 

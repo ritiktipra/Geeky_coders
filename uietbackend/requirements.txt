@@ -1,0 +1,7 @@
+fastapi
+pydantic
+pymongo
+python-dotenv
+email-validator
+uvicorn
+pytz
